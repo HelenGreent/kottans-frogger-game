@@ -1,143 +1,146 @@
-const canvas = {
-  width: 101,
-  height: 82,
-  number_of_blocks_x: 5,
-  number_of_blocks_y: 6,
-  padding_bottom: 62,
-};
-
-const enemyConfiguration = {
-  min_speed: 100,
-  top_initial_y: 60,
-  middle_initial_y: 145,
-  bottom_initial_y: 230,
-  padding: 50,
-};
-
-const playerConfiguration = {
-  initial_x: 200,
-  initial_y: 400,
-};
-
 const water_edge = 52;
-const initial_enemy_x = -canvas.width;
-const edge_x = canvas.width * canvas.number_of_blocks_x;
-const edge_y =
-  canvas.height * canvas.number_of_blocks_y - canvas.padding_bottom;
-
 // Enemies our player must avoid
-const Enemy = function (y) {
-  // Variables applied to each of our instances go here,
-  // we've provided one for you to get started
-  const random_speed = Math.floor(Math.random() * 200);
-  this.x = initial_enemy_x;
-  this.y = y;
-  this.speed = enemyConfiguration.min_speed + random_speed;
-
-  // The image/sprite for our enemies, this uses
-  // a helper we've provided to easily load images
-  this.sprite = "images/enemy-bug.png";
-};
-
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function (dt) {
-  // You should multiply any movement by the dt parameter
-  // which will ensure the game runs at the same speed for
-  // all computers.
-
-  this.x += this.speed * dt;
-  if (this.x > edge_x) {
-    this.x = -canvas.width;
+class Enemy {
+  constructor({ x, y, speedX, initialWidth, player }) {
+    this.initialWidth = initialWidth + 100;
+    this.x = x;
+    this.y = y;
+    this.speedX = speedX;
+    this.height = 82;
+    this.width = 101;
+    this.player = player;
+    this.sprite = "images/enemy-bug.png";
   }
-};
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function () {
-  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
+  checkCollision() {
+    if (
+      this.x + this.width > this.player.x &&
+      this.player.x + this.player.width > this.x &&
+      this.player.y > this.y - this.height &&
+      this.player.y - this.player.height < this.y
+    ) {
+      this.player.lose();
+    }
+  }
+
+  update(dt) {
+    this.checkCollision();
+    if (this.x >= this.initialWidth) {
+      this.x = -101;
+    }
+    this.x += dt * this.speedX;
+  }
+
+  render() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+  }
+}
 
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
-const Player = function (x, y) {
-  this.x = x;
-  this.y = y;
-  this.sprite = "images/char-boy.png";
-};
+class Player {
+  constructor({ initialWidth, initialHeight, speedX, speedY }) {
+    this.initialWidth = initialWidth;
+    this.initialHeight = initialHeight;
+    this.x = this.initialWidth / 2;
+    this.y = this.initialHeight;
+    this.height = 30;
+    this.width = 30;
+    this.speedX = speedX;
+    this.speedY = speedY;
+    this.sprite = "images/char-boy.png";
+  }
 
-Player.prototype.update = function () {
-  this.checkCollision();
-};
-
-Player.prototype.checkCollision = function () {
-  allEnemies.forEach(function (enemy) {
-    if (
-      this.y - enemyConfiguration.padding < enemy.y &&
-      this.y + enemyConfiguration.padding > enemy.y &&
-      this.x - enemyConfiguration.padding < enemy.x &&
-      this.x + enemyConfiguration.padding > enemy.x
-    ) {
-      this.lose();
+  update() {
+    if (this.y < 0) {
+      this.resetPosition();
     }
-  }, this);
+  }
+
+  render() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+  }
+
+  handleInput(keyCode) {
+    if (this.y >= 0 && keyCode === "up") {
+      this.y -= this.speedY;
+    }
+    if (this.y < this.initialHeight && keyCode === "down") {
+      this.y += this.speedY;
+    }
+    if (this.x > 0 && keyCode === "left") {
+      this.x -= this.speedX;
+    }
+    if (this.x < this.initialWidth && keyCode === "right") {
+      this.x += this.speedX;
+    }
+    if (this.y < water_edge) {
+      this.wins();
+    }
+  }
+
+  resetPosition() {
+    this.x = this.initialWidth / 2;
+    this.y = this.initialHeight;
+  }
+
+  lose() {
+    setTimeout(() => {
+      this.resetPosition();
+    }, 100);
+    alert("Game over. Try again!");
+  }
+
+  wins() {
+    setTimeout(() => {
+      this.resetPosition();
+    }, 100);
+    alert("You win!!! Congratulation");
+  }
+}
+
+const playerConfiguration = {
+  initialWidth: 400,
+  initialHeight: 375,
+  speedY: 80,
+  speedX: 100,
 };
 
-Player.prototype.render = function () {
-  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+const player = new Player(playerConfiguration);
+
+const enemyFirstConfiguration = {
+  x: 100,
+  y: 60,
+  speedX: 140,
+  initialWidth: 400,
+  player,
 };
 
-Player.prototype.handleInput = function (keyCode) {
-  if (this.y >= 0 && keyCode === "up") {
-    this.y -= canvas.height;
-  }
-  if (this.y < edge_y - canvas.height && keyCode === "down") {
-    this.y += canvas.height;
-  }
-  if (this.x > 0 && keyCode === "left") {
-    this.x -= canvas.width;
-  }
-  if (this.x < edge_x - canvas.width && keyCode === "right") {
-    this.x += canvas.width;
-  }
-  if (this.y < water_edge) {
-    this.wins();
-  }
+const enemySecondConfiguration = {
+  x: 100,
+  y: 145,
+  speedX: 150,
+  initialWidth: 400,
+  player,
 };
 
-Player.prototype.resetPosition = function () {
-  this.x = playerConfiguration.initial_x;
-  this.y = playerConfiguration.initial_y;
-};
-
-Player.prototype.wins = function () {
-  setTimeout(() => {
-    alert("You win! Congratulation");
-    this.resetPosition();
-  }, 100);
-};
-
-Player.prototype.lose = function () {
-  setTimeout(() => {
-    this.resetPosition();
-  }, 100);
-  alert("Game over. Try again!");
+const enemyThirdConfiguration = {
+  x: 100,
+  y: 230,
+  speedX: 100,
+  initialWidth: 400,
+  player,
 };
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-
 const allEnemies = [
-  new Enemy(enemyConfiguration.top_initial_y),
-  new Enemy(enemyConfiguration.middle_initial_y),
-  new Enemy(enemyConfiguration.bottom_initial_y),
+  new Enemy(enemyFirstConfiguration),
+  new Enemy(enemySecondConfiguration),
+  new Enemy(enemyThirdConfiguration),
 ];
-
-const player = new Player(
-  playerConfiguration.initial_x,
-  playerConfiguration.initial_y
-);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
