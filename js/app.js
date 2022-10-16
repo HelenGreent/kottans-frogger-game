@@ -6,18 +6,18 @@ class Enemy {
     this.x = x;
     this.y = y;
     this.speedX = speedX;
-    this.height = 82;
-    this.width = 101;
+    this.height = 40;
+    this.width = 80;
     this.player = player;
     this.sprite = "images/enemy-bug.png";
   }
 
   checkCollision() {
     if (
-      this.x + this.width > this.player.x &&
-      this.player.x + this.player.width > this.x &&
       this.player.y > this.y - this.height &&
-      this.player.y - this.player.height < this.y
+      this.player.y - this.player.height < this.y &&
+      this.x + this.width > this.player.x &&
+      this.player.x + this.player.width > this.x
     ) {
       this.player.lose();
     }
@@ -25,10 +25,11 @@ class Enemy {
 
   update(dt) {
     this.checkCollision();
+    
+        this.x += this.speedX * dt;
     if (this.x >= this.initialWidth) {
       this.x = -101;
     }
-    this.x += dt * this.speedX;
   }
 
   render() {
@@ -112,7 +113,7 @@ const player = new Player(playerConfiguration);
 const enemyFirstConfiguration = {
   x: 100,
   y: 60,
-  speedX: 140,
+  speedX: 200,
   initialWidth: 400,
   player,
 };
@@ -120,7 +121,7 @@ const enemyFirstConfiguration = {
 const enemySecondConfiguration = {
   x: 100,
   y: 145,
-  speedX: 150,
+  speedX: 180,
   initialWidth: 400,
   player,
 };
@@ -128,7 +129,7 @@ const enemySecondConfiguration = {
 const enemyThirdConfiguration = {
   x: 100,
   y: 230,
-  speedX: 100,
+  speedX: 150,
   initialWidth: 400,
   player,
 };
