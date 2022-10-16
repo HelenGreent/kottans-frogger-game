@@ -25,8 +25,8 @@ class Enemy {
 
   update(dt) {
     this.checkCollision();
-    
-        this.x += this.speedX * dt;
+
+    this.x += this.speedX * dt;
     if (this.x >= this.initialWidth) {
       this.x = -101;
     }
@@ -53,7 +53,7 @@ class Player {
     this.sprite = "images/char-boy.png";
   }
 
-  update() {
+  update(dt) {
     if (this.y < 0) {
       this.resetPosition();
     }
@@ -87,9 +87,7 @@ class Player {
   }
 
   lose() {
-    setTimeout(() => {
-      this.resetPosition();
-    }, 100);
+    this.resetPosition();
     alert("Game over. Try again!");
   }
 
